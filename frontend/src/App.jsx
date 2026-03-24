@@ -8,7 +8,6 @@ import './App.css'
 function App() {
   
   const [events, setEvents] = useState([
-    { id: '1', title: 'TEST', start: new Date().toISOString().split('T')[0] }
   ]);
 
   const nextCalendarRef = useRef(null);
@@ -43,7 +42,7 @@ function App() {
   };
 
   const handleEventClick = (clickInfo) => {
-    const action = prompt("Wybierz akcję: [E] - Edycja, [U] - Usuń, [A] - Anuluj").toUpperCase();
+    const action = prompt("E - Edycja, U - Usuń, A - Anuluj").toUpperCase();
     
     if (action === 'U') {
       if (confirm(`Czy na pewno usunąć: '${clickInfo.event.title}'?`)) {
@@ -61,6 +60,9 @@ function App() {
     }
   };
 
+  const now = new Date();
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
   return (
     <div class="App">
       <header class="app-header">
@@ -70,7 +72,7 @@ function App() {
       <div class="dual-calendar-wrapper">
         <div class="calendar-box main">
           <div class="box-header">
-            <h3>Panel Zarządzania</h3>
+            <h3>Aktualny miesiąc</h3>
           </div>
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -82,12 +84,11 @@ function App() {
             datesSet={handleDatesSet}
             height="100%"
             headerToolbar={{ 
-              left: 'prev,next today', 
+              left: 'prev,next', 
               center: 'title', 
               right: 'dayGridMonth,timeGridWeek,timeGridDay' 
             }}
             buttonText={{
-              today: 'Dziś',
               month: 'Miesiąc',
               week: 'Tydzień',
               day: 'Dzień'
@@ -97,12 +98,13 @@ function App() {
 
         <div className="calendar-box side">
           <div className="box-header">
-            <h3>Podgląd: Następny miesiąc</h3>
+            <h3>Następny miesiąc</h3>
           </div>
           <FullCalendar
             ref={nextCalendarRef} 
             plugins={[dayGridPlugin]}
             initialView="dayGridMonth"
+            initialDate={nextMonthStart}
             locale="pl"
             events={events}
             headerToolbar={{ left: '', center: 'title', right: '' }}
