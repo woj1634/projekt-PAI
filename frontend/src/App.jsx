@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react' 
+import { useState, useRef, useEffect } from 'react' 
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid' 
 import timeGridPlugin from '@fullcalendar/timegrid' 
@@ -6,11 +6,19 @@ import interactionPlugin from '@fullcalendar/interaction'
 import './App.css'
 
 function App() {
-  
-  const [events, setEvents] = useState([
-  ]);
-
+  const [events, setEvents] = useState([]);
   const nextCalendarRef = useRef(null);
+
+  // Adres Twojego backendu (w Dockerze będzie to ten sam host)
+  const API_URL = 'http://localhost:5000/api/events';
+
+  // 1. POBIERANIE DANYCH Z BACKENDU
+  useEffect(() => {
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => setEvents(data))
+      .catch(err => console.error("Błąd podczas ładowania zdarzeń:", err));
+  }, []);
 
   const handleDatesSet = (dateInfo) => {
     const nextCalApi = nextCalendarRef.current?.getApi();
@@ -21,7 +29,8 @@ function App() {
     }
   };
 
-  const handleDateClick = (arg) => {
+  // 2. DODAWANIE WYDARZENIA (POST)
+  const handleDateClick = async (arg) => {
     const currentViewMonth = arg.view.currentStart.getMonth();
     const clickedDate = new Date(arg.dateStr);
     const clickedMonth = clickedDate.getMonth();
@@ -31,31 +40,54 @@ function App() {
       return;
     }
 
-    const title = prompt('Nazwa nowego wydarzenia:');
+    const title = prompt('Podaj nazwę nowego wydarzenia:');
     if (title && title.trim() !== "") {
-      setEvents([...events, { 
-        id: Math.random().toString(), 
-        title: title.trim(), 
-        start: arg.dateStr 
-      }]);
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            title: title.trim(), 
+            start: arg.dateStr 
+          })
+        });
+        const savedEvent = await response.json();
+        // Aktualizujemy stan o obiekt zwrócony z bazy (z ID)
+        setEvents([...events, savedEvent]);
+      } catch (err) {
+        alert("Błąd podczas zapisywania!");
+      }
     }
   };
 
-  const handleEventClick = (clickInfo) => {
+  // 3. EDYCJA I USUWANIE (PUT / DELETE)
+  const handleEventClick = async (clickInfo) => {
     const action = prompt("E - Edycja, U - Usuń, A - Anuluj").toUpperCase();
-    
+
     if (action === 'U') {
       if (confirm(`Czy na pewno usunąć: '${clickInfo.event.title}'?`)) {
-        setEvents(events.filter(ev => ev.id !== clickInfo.event.id));
-        clickInfo.event.remove();
+        try {
+          await fetch(`${API_URL}/${clickInfo.event.id}`, { method: 'DELETE' });
+          setEvents(events.filter(ev => ev.id !== clickInfo.event.id));
+        } catch (err) {
+          alert("Błąd podczas usuwania!");
+        }
       }
     } else if (action === 'E') {
       const newTitle = prompt("Wpisz nową nazwę wydarzenia:", clickInfo.event.title);
       if (newTitle) {
-        setEvents(events.map(ev => 
-          ev.id === clickInfo.event.id ? { ...ev, title: newTitle } : ev
-        ));
-        clickInfo.event.setProp('title', newTitle);
+        try {
+          await fetch(`${API_URL}/${clickInfo.event.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: newTitle })
+          });
+          setEvents(events.map(ev => 
+            ev.id === clickInfo.event.id ? { ...ev, title: newTitle } : ev
+          ));
+        } catch (err) {
+          alert("Błąd podczas edycji!");
+        }
       }
     }
   };
@@ -64,14 +96,14 @@ function App() {
   const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   return (
-    <div class="App">
-      <header class="app-header">
+    <div className="App">
+      <header className="app-header">
         <h1>Kalendarz</h1>
       </header>
 
-      <div class="dual-calendar-wrapper">
-        <div class="calendar-box main">
-          <div class="box-header">
+      <div className="dual-calendar-wrapper">
+        <div className="calendar-box main">
+          <div className="box-header">
             <h3>Aktualny miesiąc</h3>
           </div>
           <FullCalendar

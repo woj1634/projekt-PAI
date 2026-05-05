@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+  api:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - MONGO_URI=mongodb://db:27017/kalendarz
+  web:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  mongo-data: 
