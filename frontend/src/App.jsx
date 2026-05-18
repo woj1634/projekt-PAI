@@ -3,16 +3,15 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid' 
 import timeGridPlugin from '@fullcalendar/timegrid' 
 import interactionPlugin from '@fullcalendar/interaction' 
+import Swal from 'sweetalert2' 
 import './App.css'
 
 function App() {
   const [events, setEvents] = useState([]);
   const nextCalendarRef = useRef(null);
 
-  // Adres Twojego backendu (w Dockerze będzie to ten sam host)
   const API_URL = 'http://localhost:5000/api/events';
 
-  // 1. POBIERANIE DANYCH Z BACKENDU
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
@@ -29,64 +28,94 @@ function App() {
     }
   };
 
-  // 2. DODAWANIE WYDARZENIA (POST)
   const handleDateClick = async (arg) => {
     const currentViewMonth = arg.view.currentStart.getMonth();
     const clickedDate = new Date(arg.dateStr);
     const clickedMonth = clickedDate.getMonth();
 
     if (clickedMonth !== currentViewMonth) {
-      alert("Możesz dodać wydarzenie tylko w wybranym miesiącu!");
+      Swal.fire('Uwaga!', 'Możesz dodać wydarzenie tylko w wybranym miesiącu!', 'warning');
       return;
     }
+    const { value: title } = await Swal.fire({
+      title: 'Nowe wydarzenie',
+      input: 'text',
+      inputLabel: 'Podaj nazwę nowego wydarzenia:',
+      showCancelButton: true,
+      confirmButtonText: 'Dodaj',
+      cancelButtonText: 'Anuluj'
+    });
 
-    const title = prompt('Podaj nazwę nowego wydarzenia:');
     if (title && title.trim() !== "") {
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            title: title.trim(), 
-            start: arg.dateStr 
-          })
+          body: JSON.stringify({ title: title.trim(), start: arg.dateStr })
         });
         const savedEvent = await response.json();
-        // Aktualizujemy stan o obiekt zwrócony z bazy (z ID)
         setEvents([...events, savedEvent]);
       } catch (err) {
-        alert("Błąd podczas zapisywania!");
+        Swal.fire('Błąd', 'Nie udało się zapisać wydarzenia.', 'error');
       }
     }
   };
 
-  // 3. EDYCJA I USUWANIE (PUT / DELETE)
   const handleEventClick = async (clickInfo) => {
-    const action = prompt("E - Edycja, U - Usuń, A - Anuluj").toUpperCase();
+    const result = await Swal.fire({
+      title: clickInfo.event.title,
+      text: 'Co chcesz zrobić z tym wydarzeniem?',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Edytuj',
+      denyButtonText: 'Usuń',
+      cancelButtonText: 'Anuluj',
+      confirmButtonColor: '#3788d8',
+      denyButtonColor: '#dc3545'
+    });
 
-    if (action === 'U') {
-      if (confirm(`Czy na pewno usunąć: '${clickInfo.event.title}'?`)) {
+    if (result.isDenied) {
+      const confirmDelete = await Swal.fire({
+        title: 'Czy na pewno usunąć?',
+        text: `'${clickInfo.event.title}' zniknie na zawsze!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Tak, usuń',
+        cancelButtonText: 'Nie'
+      });
+
+      if (confirmDelete.isConfirmed) {
         try {
           await fetch(`${API_URL}/${clickInfo.event.id}`, { method: 'DELETE' });
           setEvents(events.filter(ev => ev.id !== clickInfo.event.id));
+          Swal.fire('Usunięto!', '', 'success');
         } catch (err) {
-          alert("Błąd podczas usuwania!");
+          Swal.fire('Błąd', 'Nie udało się usunąć.', 'error');
         }
       }
-    } else if (action === 'E') {
-      const newTitle = prompt("Wpisz nową nazwę wydarzenia:", clickInfo.event.title);
-      if (newTitle) {
+    } else if (result.isConfirmed) {
+      const { value: newTitle } = await Swal.fire({
+        title: 'Edycja wydarzenia',
+        input: 'text',
+        inputValue: clickInfo.event.title,
+        showCancelButton: true,
+        confirmButtonText: 'Zapisz',
+        cancelButtonText: 'Anuluj'
+      });
+
+      if (newTitle && newTitle.trim() !== "") {
         try {
           await fetch(`${API_URL}/${clickInfo.event.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: newTitle })
+            body: JSON.stringify({ title: newTitle.trim() })
           });
           setEvents(events.map(ev => 
-            ev.id === clickInfo.event.id ? { ...ev, title: newTitle } : ev
+            ev.id === clickInfo.event.id ? { ...ev, title: newTitle.trim() } : ev
           ));
+          Swal.fire('Zapisano!', '', 'success');
         } catch (err) {
-          alert("Błąd podczas edycji!");
+          Swal.fire('Błąd', 'Nie udało się zaktualizować.', 'error');
         }
       }
     }
@@ -120,11 +149,7 @@ function App() {
               center: 'title', 
               right: 'dayGridMonth,timeGridWeek,timeGridDay' 
             }}
-            buttonText={{
-              month: 'Miesiąc',
-              week: 'Tydzień',
-              day: 'Dzień'
-            }}
+            buttonText={{ month: 'Miesiąc', week: 'Tydzień', day: 'Dzień' }}
           />
         </div>
 
