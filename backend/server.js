@@ -15,6 +15,16 @@ const EventSchema = new mongoose.Schema({
   title: String,
   start: String
 });
+
+EventSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {   
+    ret.id = ret._id.toString();
+    delete ret._id;
+  }
+});
+
 const Event = mongoose.model('Event', EventSchema);
 
 app.get('/api/events', async (req, res) => {
