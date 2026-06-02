@@ -9,9 +9,9 @@ properties:
         - port: 5000
       environmentVariables:
         - name: MONGO_URI
-          value: ${{ secrets.MONGO_URI }}
+          value: "${{ secrets.MONGO_URI_SECRET }}"
         - name: PORT
-          value: 5000
+          value: "5000"
       resources:
         requests:
           cpu: 1.0
