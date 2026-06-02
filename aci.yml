@@ -20,6 +20,10 @@ properties:
           requests:
             cpu: 1.0
             memoryInGB: 1.5
+  imageRegistryCredentials:
+    - server: kalendarzcr-fwdnexfdgcdfeugb.azurecr.io
+      username: "$REGISTRY_USERNAME"
+      password: "$REGISTRY_PASSWORD"          
   ipAddress:
     type: Public
     ports:
