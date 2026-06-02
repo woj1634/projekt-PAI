@@ -4,7 +4,7 @@ name: kalendarz-app
 properties:
   containers:
     - name: myapp
-      image: kalendarzcr.azurecr.io/myapp:latest
+      image: kalendarzcr-fwdnexfdgcdfeugb.azurecr.io/myapp:latest
       ports:
         - port: 80
       environmentVariables:
