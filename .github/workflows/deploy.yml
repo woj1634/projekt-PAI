@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
+      - main  
 
 jobs:
   build:
@@ -24,8 +24,11 @@ jobs:
           docker build -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest .
           docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest
 
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Deploy to Azure Container Instances
         run: |
           az container create --resource-group Projekt_TC --file aci.yml
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
