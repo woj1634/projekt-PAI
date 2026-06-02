@@ -1,25 +1,27 @@
 apiVersion: '2019-12-01'
 location: polandcentral
 name: kalendarz-app
+type: Microsoft.ContainerInstance/containerGroups
 properties:
-  containers:
-    - name: myapp
-      image: kalendarzcr-fwdnexfdgcdfeugb.azurecr.io/myapp:latest
-      ports:
-        - port: 5000
-      environmentVariables:
-        - name: MONGO_URI
-          value: "${{ secrets.MONGO_URI_SECRET }}"
-        - name: PORT
-          value: "5000"
-      resources:
-        requests:
-          cpu: 1.0
-          memoryInGB: 1.5
   osType: Linux
   restartPolicy: Always
+  containers:
+    - name: myapp
+      properties: 
+        image: kalendarzcr-fwdnexfdgcdfeugb.azurecr.io/myapp:latest
+        ports:
+          - port: 5000
+        environmentVariables:
+          - name: MONGO_URI
+            value: "$MONGO_URI_SECRET" 
+          - name: PORT
+            value: "5000"
+        resources:
+          requests:
+            cpu: 1.0
+            memoryInGB: 1.5
   ipAddress:
     type: Public
     ports:
       - protocol: tcp
-        port: 80
+        port: 80 
