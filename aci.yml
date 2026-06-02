@@ -1,0 +1,23 @@
+apiVersion: '2019-12-01'
+location: polandcentral
+name: kalendarz-app
+properties:
+  containers:
+    - name: myapp
+      image: kalendarzcr.azurecr.io/myapp:latest
+      ports:
+        - port: 80
+      environmentVariables:
+        - name: MONGO_URI
+          value: "mongodb+srv://woj1634:<password>@kalendarzdb.global.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.5
+  osType: Linux
+  restartPolicy: Always
+  ipAddress:
+    type: Public
+    ports:
+      - protocol: tcp
+        port: 80
