@@ -33,8 +33,11 @@ jobs:
         run: |
           envsubst < aci.yml > aci_ready.yml
           
-          az container create --resource-group Projekt_TC --file aci_ready.yml
+          az container create \
+            --resource-group Projekt_TC \
+            --file aci_ready.yml \
+            --secure-environment-variables MONGO_URI="${{ secrets.MONGO_URI_SECRET }}" \
+            --environment-variables PORT="80"
         env:
-          MONGO_URI_SECRET: ${{ secrets.MONGO_URI_SECRET }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
