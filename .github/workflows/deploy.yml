@@ -28,7 +28,10 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
+          allow-no-subscriptions: true
+
+      - name: Set Subscription
+        run: az account set --subscription "10d5de1f-95ce-4ef4-ae18-2ec571c47968"    
 
       - name: Deploy to Azure Container Instances
         run: |
