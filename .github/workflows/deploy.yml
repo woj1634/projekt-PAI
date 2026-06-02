@@ -25,5 +25,16 @@ jobs:
           docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest
 
       - name: Deploy to Azure Container Instances
-        run: |
-          az container create --resource-group Projekt_TC --file aci.yml --registry-username ${{ secrets.REGISTRY_USERNAME }} --registry-password ${{ secrets.REGISTRY_PASSWORD }}
+        uses: azure/aci-deploy@v1
+        with:
+          resource-group: Projekt_TC
+          dns-name-label: kalendarz-app-tc-${{ github.run_id }} 
+          image: ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest
+          registry-username: ${{ secrets.REGISTRY_USERNAME }}
+          registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+          name: kalendarz-app
+          location: norwayeast
+          ports: 80
+          environment-variables: |
+            MONGO_URI=${{ secrets.MONGO_URI_SECRET }}
+            PORT=80
