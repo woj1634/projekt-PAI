@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy Split Containers
 
 on:
   push:
@@ -19,11 +19,16 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Backend Image
         run: |
-          docker build -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest .
-          docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest
+          docker build -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp-backend:latest ./backend
+          docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp-backend:latest
 
-      - name: Trigger Azure Webhook to Redeploy
+      - name: Build and Push Frontend Image
         run: |
-          curl -X POST "${{ secrets.AZURE_WEBHOOK_URL }}"
+          docker build -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp-frontend:latest ./frontend
+          docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp-frontend:latest
+
+      - name: Trigger Azure Backend Webhook
+        run: |
+          curl -X POST "${{ secrets.AZURE_BACKEND_WEBHOOK_URL }}"
