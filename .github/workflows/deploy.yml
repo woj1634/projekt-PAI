@@ -24,20 +24,6 @@ jobs:
           docker build -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest .
           docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/myapp:latest
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Container Instances
+      - name: Trigger Azure Webhook to Redeploy
         run: |
-          envsubst < aci.yml > aci_ready.yml
-          
-          az container create \
-            --resource-group Projekt_TC \
-            --file aci_ready.yml \
-            --secure-environment-variables MONGO_URI="${{ secrets.MONGO_URI_SECRET }}" \
-            --environment-variables PORT="80"
-        env:
-          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          curl -X POST "${{ secrets.AZURE_WEBHOOK_URL }}"
