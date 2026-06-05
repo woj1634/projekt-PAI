@@ -6,10 +6,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/kalendarz';
-mongoose.connect(mongoURI)
-  .then(() => console.log("Połączono z MongoDB"))
-  .catch(err => console.error("Błąd połączenia z bazą:", err));
+const mongoURI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error("KRYTYCZNY BŁĄD: Brak zmiennej MONGO_URI w środowisku!");
+  process.exit(1);
+}
+
+const connectionOptions = {
+  ssl: true,
+  retryWrites: false
+};
+
+console.log("Próba połączenia z Azure Cosmos DB...");
+mongoose.connect(mongoURI, connectionOptions)
+  .then(() => console.log("SUKCES: Połączono bezpiecznie z Azure Cosmos DB!"))
+  .catch(err => {
+    console.error("KRYTYCZNY BŁĄD połączenia z bazą Cosmos DB:", err);
+    process.exit(1);
+  });
 
 const EventSchema = new mongoose.Schema({
   title: String,
@@ -28,24 +43,44 @@ EventSchema.set('toJSON', {
 const Event = mongoose.model('Event', EventSchema);
 
 app.get('/api/events', async (req, res) => {
-  const events = await Event.find();
-  res.json(events);
+  try {
+    const events = await Event.find();
+    res.json(events);
+  } catch (err) {
+    console.error("Błąd podczas pobierania wydarzeń:", err);
+    res.status(500).json({ error: "Nie udało się pobrać danych z bazy" });
+  }
 });
 
 app.post('/api/events', async (req, res) => {
-  const newEvent = new Event(req.body);
-  await newEvent.save();
-  res.status(201).json(newEvent);
+  try {
+    const newEvent = new Event(req.body);
+    await newEvent.save();
+    res.status(201).json(newEvent);
+  } catch (err) {
+    console.error("Błąd podczas zapisywania wydarzenia:", err);
+    res.status(500).json({ error: "Nie udało się zapisać danych w bazie" });
+  }
 });
 
 app.delete('/api/events/:id', async (req, res) => {
-  await Event.findByIdAndDelete(req.params.id);
-  res.status(204).send();
+  try {
+    await Event.findByIdAndDelete(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    console.error("Błąd podczas usuwania wydarzenia:", err);
+    res.status(500).json({ error: "Nie udało się usunąć danych z bazy" });
+  }
 });
 
 app.put('/api/events/:id', async (req, res) => {
-  await Event.findByIdAndUpdate(req.params.id, req.body);
-  res.json({ success: true });
+  try {
+    await Event.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Błąd podczas aktualizacji wydarzenia:", err);
+    res.status(500).json({ error: "Nie udało się zaktualizować danych w bazie" });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
