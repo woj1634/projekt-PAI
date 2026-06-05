@@ -10,7 +10,7 @@ function App() {
   const [events, setEvents] = useState([]);
   const nextCalendarRef = useRef(null);
 
-  const API_URL = 'http://localhost:5000/api/events';
+  const API_URL = 'http://kalendarz-app-web-d8g2cge8b2dcaac9.polandcentral-01.azurewebsites.net';
 
   useEffect(() => {
     fetch(API_URL)
