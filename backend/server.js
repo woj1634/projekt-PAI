@@ -15,12 +15,17 @@ if (!mongoURI) {
 
 const connectionOptions = {
   ssl: true,
-  retryWrites: false
+  retryWrites: false,
+  directConnection: true, 
+  family: 4               
 };
 
 console.log("Próba połączenia z Azure Cosmos DB...");
 mongoose.connect(mongoURI, connectionOptions)
-  .then(() => console.log("SUKCES: Połączono bezpiecznie z Azure Cosmos DB!"))
+  .then(() => {
+    console.log("SUKCES: Połączono bezpiecznie z Azure Cosmos DB!");
+    mongoose.set('bufferCommands', false); 
+  })
   .catch(err => {
     console.error("KRYTYCZNY BŁĄD połączenia z bazą Cosmos DB:", err);
     process.exit(1);
@@ -48,41 +53,6 @@ app.get('/api/events', async (req, res) => {
     res.json(events);
   } catch (err) {
     console.error("Błąd podczas pobierania wydarzeń:", err);
-    res.status(500).json({ error: "Nie udało się pobrać danych z bazy" });
+    res.status(500).json({ error: "Nie udało się pobrać danych z bazy", details: err.message });
   }
 });
-
-app.post('/api/events', async (req, res) => {
-  try {
-    const newEvent = new Event(req.body);
-    await newEvent.save();
-    res.status(201).json(newEvent);
-  } catch (err) {
-    console.error("Błąd podczas zapisywania wydarzenia:", err);
-    res.status(500).json({ error: "Nie udało się zapisać danych w bazie" });
-  }
-});
-
-app.delete('/api/events/:id', async (req, res) => {
-  try {
-    await Event.findByIdAndDelete(req.params.id);
-    res.status(204).send();
-  } catch (err) {
-    console.error("Błąd podczas usuwania wydarzenia:", err);
-    res.status(500).json({ error: "Nie udało się usunąć danych z bazy" });
-  }
-});
-
-app.put('/api/events/:id', async (req, res) => {
-  try {
-    await Event.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Błąd podczas aktualizacji wydarzenia:", err);
-    res.status(500).json({ error: "Nie udało się zaktualizować danych w bazie" });
-  }
-});
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => console.log(`Backend działa na porcie ${PORT}`));
