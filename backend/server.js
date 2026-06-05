@@ -56,3 +56,9 @@ app.get('/api/events', async (req, res) => {
     res.status(500).json({ error: "Nie udało się pobrać danych z bazy", details: err.message });
   }
 });
+
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Backend działa na porcie ${PORT}`);
+});
