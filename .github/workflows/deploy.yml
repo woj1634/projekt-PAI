@@ -12,6 +12,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js for Backend Tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Backend Dependencies and Run Tests
+        run: |
+          cd backend
+          npm install
+          npm test
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
