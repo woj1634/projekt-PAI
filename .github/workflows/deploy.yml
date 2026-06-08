@@ -17,12 +17,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Grant execute permission to Jest
-        run: chmod +x ./node_modules/.bin/jest
-
-      - name: Run tests
-        run: npm test
-
       - name: Install Backend Dependencies and Run Tests
         run: |
           cd backend
