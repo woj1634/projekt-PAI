@@ -37,7 +37,7 @@ Zabezpieczenie aplikacji i danych zrealizowano na trzech poziomach:
 * **Szyfrowanie ruchu (w transporcie):** Komunikacja z aplikacją wymusza protokół HTTPS. W panelu Azure App Service włączono regułę „HTTPS Only”, która automatycznie przekierowuje nieszyfrowane żądania HTTP.
 * **Komunikacja z bazą danych:** Połączenie z Azure Cosmos DB wykorzystuje protokół TLS/SSL. Zostało to skonfigurowane w kodzie backendu za pomocą flag `ssl: true` oraz `directConnection: true` w bibliotece Mongoose.
 * **Ochrona danych w spoczynku:** Dane na dyskach chmury Azure są szyfrowane automatycznie przez dostawcę usług (Encryption at Rest).
-* **Kwestia uwierzytelniania:** Kalendarz działa w formie tablicy publicznej (wspólnej dla wszystkich użytkowników) i nie przechowuje kont. Ze względu na brak modułu logowania, implementacja mechanizmów haszowania haseł (np. bcrypt) była w tym projekcie bezprzedmiotowa.
+* **Kwestia uwierzytelniania:** Kalendarz działa w formie tablicy publicznej (wspólnej dla wszystkich użytkowników) i nie przechowuje kont. Ze względu na brak modułu logowania, implementacja mechanizmów haszowania haseł (np. bcrypt) była w tym projekcie bezcelowa.
 
 ### 3. Konteneryzacja i podział na usługi
 Projekt został odizolowany i podzielony na dwa kontenery Dockerowe:
