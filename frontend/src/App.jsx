@@ -127,7 +127,7 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>Kalendarz - test</h1>
+        <h1>Kalendarz</h1>
       </header>
 
       <div className="dual-calendar-wrapper">
