@@ -9,7 +9,6 @@ app.use(express.json());
 const mongoURI = process.env.MONGO_URI;
 
 if (!mongoURI) {
-  console.error("KRYTYCZNY BŁĄD: Brak zmiennej MONGO_URI w środowisku!");
   process.exit(1);
 }
 
@@ -22,11 +21,9 @@ const connectionOptions = {
 
 mongoose.connect(mongoURI, connectionOptions)
   .then(() => {
-    console.log("SUKCES: Połączono bezpiecznie z Azure Cosmos DB!");
     mongoose.set('bufferCommands', false);
   })
   .catch(err => {
-    console.error("KRYTYCZNY BŁĄD połączenia z bazą Cosmos DB:", err);
     process.exit(1);
   });
 
